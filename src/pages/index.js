@@ -1,7 +1,8 @@
 import React from "react"
 import { Link } from "gatsby"
-import { Query } from "react-apollo"
 import gql from "graphql-tag"
+import { useQuery } from "@apollo/react-hooks"
+import { client } from "../services/apollo/client"
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
@@ -19,28 +20,31 @@ const CHARACTER_QUERY = gql`
   }
 `
 
-const IndexPage = () => (
-  <Layout>
-    <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>The content below is using react-apollo with the Query component</p>
-    <Query query={CHARACTER_QUERY}>
-      {({ loading, error, data }) => {
-        if (loading) return <p>Loading...</p>
-        if (error) return <p>Error: {error.message}</p>
+const IndexPage = () => {
+  const { loading, error, data } = useQuery(CHARACTER_QUERY, { client })
 
-        const { name, species, gender, origin } = data.character
-
-        return (
-          <p>
-            This is the info about {name}, a {species} {gender} from{" "}
-            {origin.name}{" "}
-          </p>
-        )
-      }}
-    </Query>
-    <Link to="/page-2/">Go to page 2</Link>
-  </Layout>
-)
+  return (
+    <Layout>
+      <SEO title="Home" />
+      <h1>Hi people</h1>
+      <p>
+        The content below is now using the useQuery hook from
+        @apollo/react-hooks!
+      </p>
+      <p>
+        {loading
+          ? `Loading...`
+          : error
+          ? `Error: ${error.message}`
+          : data.character
+          ? `This is the info about ${data.character.name}, a ${
+              data.character.species
+            } ${data.character.gender} from ${data.character.origin.name}`
+          : `We couldn't show anything :(`}
+      </p>
+      <Link to="/page-2/">Go to page 2</Link>
+    </Layout>
+  )
+}
 
 export default IndexPage
